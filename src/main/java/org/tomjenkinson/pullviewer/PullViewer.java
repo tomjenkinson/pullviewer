@@ -27,9 +27,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 
 @Named("pullViewer")
 @ApplicationScoped
@@ -39,11 +43,18 @@ public class PullViewer {
     private List<Pull> lastPulls = new ArrayList<Pull>();
 
     public synchronized List<Pull> getPulls() throws IOException {
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
+        sdf.setTimeZone(TimeZone.getTimeZone("Europe/London"));
         try {
             List<Pull> pulls = new ArrayList<Pull>();
             for (String project : new String[]{"jbosstm/narayana", "jbosstm/quickstart", "jbosstm/documentation", "jbosstm/jboss-transaction-spi", "jbosstm/jboss-as", "jbosstm/jboss-transaction-spi", "jbosstm/narayana.io", "jbosstm/performance", "jboss-dockerfiles/narayana"}) {
                 URL url = new URL("https://api.github.com/repos/" + project + "/pulls");
                 URLConnection connection = url.openConnection();
+
+                String rateReset = connection.getHeaderField("X-RateLimit-Reset");
+                Date reset = new Date(Integer.parseInt(rateReset) * 1000L);
+                rateLimited.setDescription("RATE LIMITED WARNING CACHED DATA - rate will reset at " + sdf.format(reset));
+
                 connection.connect();
                 InputStream is = connection.getInputStream();
                 int ptr = 0;
