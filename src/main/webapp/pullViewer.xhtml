@@ -19,10 +19,10 @@
 		<h:dataTable id="pulls" value="#{pullViewer.pulls}" rendered="true"
 			var="pull">
 			<h:column>
-				<a href="#{pull.pullUrl}"><h:outputText value="#{pull.pullUrl}" /></a>
+				<a href="#{pull.pullUrl}"><h:outputText value="Link to pull" /></a>
 			</h:column>
 			<h:column>
-				<a href="#{pull.jiraUrl}"><h:outputText value="#{pull.jiraUrl}" /></a>
+				<a href="#{pull.jiraUrl}"><h:outputText value="Link to issue" /></a>
 			</h:column>
 			<h:column>
 				<h:outputText value="#{pull.description}" />

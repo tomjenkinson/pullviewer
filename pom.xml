@@ -37,6 +37,17 @@
 					<warName>ROOT</warName>
 				</configuration>
 			</plugin>
+      <plugin>
+        <groupId>org.wildfly.plugins</groupId>
+        <artifactId>wildfly-maven-plugin</artifactId>
+        <version>1.2.1.Final</version>
+        <configuration>
+          <filename>..\deployments\ROOT.war</filename>
+          <javaOpts>
+            <javaOpt>-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n</javaOpt>
+          </javaOpts>
+        </configuration>
+      </plugin>
 		</plugins>
 	</build>
 </project>

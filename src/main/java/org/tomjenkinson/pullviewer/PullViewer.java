@@ -59,8 +59,8 @@ public class PullViewer {
 				JSONObject next = (JSONObject) iterator.next();
 				String title = next.getString("title");
 				String pullUrl = next.getString("url").replace(
-						"api.github.com/repos/jbosstm/" + project + "/pulls",
-						"www.github.com/jbosstm/" + project + "/pull");
+						"api.github.com/repos/" + project + "/pulls",
+						"github.com/" + project + "/pull");
 				String jiraUrl = "https://issues.jboss.org/browse/"
 						+ title.substring(0, Math.min(
 								title.indexOf(' ') > 0 ? title.indexOf(' ')
@@ -68,7 +68,7 @@ public class PullViewer {
 								title.indexOf('.') > 0 ? title.indexOf('.')
 										: title.length()));
 				String description = title.substring(title.indexOf(' '));
-				pulls.add(new Pull(pullUrl, jiraUrl, description));
+				pulls.add(new Pull(project, pullUrl, jiraUrl, description));
 
 			}
 		}
