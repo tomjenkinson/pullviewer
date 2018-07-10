@@ -40,10 +40,8 @@ public class PullViewer {
 
 		List<Pull> pulls = new ArrayList<Pull>();
 
-		for (String project : new String[] { "narayana", "blacktie",
-				"quickstart", "documentation" }) {
-			URL url = new URL("https://api.github.com/repos/jbosstm/" + project
-					+ "/pulls");
+		for (String project : new String[] { "jbosstm/narayana", "jbosstm/quickstart", "jbosstm/documentation", "jbosstm/jboss-transaction-spi", "jbosstm/jboss-as", "jbosstm/jboss-transaction-spi", "jbosstm/narayana.io", "jbosstm/performance", "jboss-dockerfiles/narayana" }) {
+			URL url = new URL("https://api.github.com/repos/" + project + "/pulls");
 			URLConnection connection = url.openConnection();
 			connection.connect();
 			InputStream is = connection.getInputStream();
