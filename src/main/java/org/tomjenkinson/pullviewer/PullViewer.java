@@ -21,8 +21,14 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -32,7 +38,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.TimeZone;
 
 @Named("pullViewer")
@@ -41,15 +46,43 @@ public class PullViewer {
     private Pull rateLimited = new Pull("RATELIMITED", "RATELIMITED", "ERROR", "RATE LIMITED WARNING CACHED DATA");
 
     private List<Pull> lastPulls = new ArrayList<Pull>();
+    private SimpleDateFormat sdf;
+    private long lastChecked;
+    private String basic;
 
-    public synchronized List<Pull> getPulls() throws IOException {
-        SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
+    @PostConstruct
+    public void init () {
+        sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
         sdf.setTimeZone(TimeZone.getTimeZone("Europe/London"));
+    }
+
+    // JSF will call this multiple times so only attempt if older than 10 seconds
+    public synchronized List<Pull> getPulls() throws IOException {
+
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastChecked < 10000) {
+            return lastPulls;
+        }
+        lastChecked = currentTime;
         try {
             List<Pull> pulls = new ArrayList<Pull>();
             for (String project : new String[]{"jbosstm/narayana", "jbosstm/quickstart", "jbosstm/documentation", "jbosstm/jboss-transaction-spi", "jbosstm/jboss-as", "jbosstm/jboss-transaction-spi", "jbosstm/narayana.io", "jbosstm/performance", "jboss-dockerfiles/narayana"}) {
                 URL url = new URL("https://api.github.com/repos/" + project + "/pulls");
                 URLConnection connection = url.openConnection();
+                if (basic == null) {
+                    File file = new File("creds");
+                    if (file.exists()) {
+                        BufferedReader reader = new BufferedReader(new FileReader(file));
+                        String username = reader.readLine();
+                        String password = reader.readLine();
+                        basic = "Basic " + javax.xml.bind.DatatypeConverter.printBase64Binary((username + ":" + password).getBytes());
+                    } else {
+                        System.out.println("Still looking for: " + file.getAbsolutePath());
+                    }
+                }
+                if (basic != null) {
+                    connection.setRequestProperty ("Authorization", basic);
+                }
 
                 String rateReset = connection.getHeaderField("X-RateLimit-Reset");
                 Date reset = new Date(Integer.parseInt(rateReset) * 1000L);
@@ -87,6 +120,7 @@ public class PullViewer {
             lastPulls.clear();
             lastPulls.addAll(pulls);
         } catch (Throwable t) {
+            basic = null;
             t.printStackTrace(); // This is probably rate limit
             if (!lastPulls.contains(rateLimited)) {
                 lastPulls.add(0, rateLimited);
