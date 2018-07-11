@@ -66,7 +66,7 @@ public class PullViewer {
         lastChecked = currentTime;
         try {
             List<Pull> pulls = new ArrayList<Pull>();
-            for (String project : new String[]{"jbosstm/narayana", "jbosstm/quickstart", "jbosstm/documentation", "jbosstm/jboss-transaction-spi", "jbosstm/jboss-as", "jbosstm/jboss-transaction-spi", "jbosstm/narayana.io", "jbosstm/performance", "jboss-dockerfiles/narayana"}) {
+            for (String project : new String[]{"jbosstm/narayana", "jbosstm/quickstart", "jbosstm/documentation", "jbosstm/jboss-transaction-spi", "jbosstm/jboss-as", "jbosstm/jboss-transaction-spi", "jbosstm/narayana.io", "jbosstm/performance", "jboss-dockerfiles/narayana", "web-servers/narayana-tomcat"}) {
                 URL url = new URL("https://api.github.com/repos/" + project + "/pulls");
                 URLConnection connection = url.openConnection();
                 if (basic == null) {
