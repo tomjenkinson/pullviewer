@@ -6,6 +6,9 @@
 	<packaging>war</packaging>
 	<version>1.0</version>
 	<name>pullviewer</name>
+  <scm>
+    <connection>scm:git:git://github.com/tomjenkinson/pullviewer.git</connection>
+  </scm>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.6</maven.compiler.source>
@@ -29,10 +32,31 @@
 	<build>
 		<finalName>pullviewer</finalName>
 		<plugins>
+    <plugin>
+      <groupId>org.codehaus.mojo</groupId>
+      <artifactId>buildnumber-maven-plugin</artifactId>
+      <executions>
+        <execution>
+          <phase>validate</phase>
+          <goals>
+            <goal>create</goal>
+          </goals>
+        </execution>
+      </executions>
+      <configuration>
+        <doCheck>false</doCheck>
+        <doUpdate>true</doUpdate>
+      </configuration>
+    </plugin>
 			<plugin>
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.1.1</version>
 				<configuration>
+          <archive>
+            <manifestEntries>
+              <SCM-Revision>${buildNumber}</SCM-Revision>
+            </manifestEntries>
+          </archive>
 					<outputDirectory>deployments</outputDirectory>
 					<warName>ROOT</warName>
 				</configuration>
