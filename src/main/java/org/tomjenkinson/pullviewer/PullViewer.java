@@ -17,6 +17,7 @@ package org.tomjenkinson.pullviewer;
  * limitations under the License.
  */
 
+import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
@@ -35,6 +36,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -44,6 +46,23 @@ import java.util.TimeZone;
 @ApplicationScoped
 public class PullViewer {
     private Pull rateLimited = new Pull("RATELIMITED", "RATELIMITED", "ERROR", "RATE LIMITED WARNING CACHED DATA");
+
+    private List<String> urls = Arrays.asList(new String[] {
+            "https://api.github.com/repos/jbosstm/narayana/pulls",
+            "https://api.github.com/repos/jbosstm/quickstart/pulls",
+            "https://api.github.com/repos/jbosstm/documentation/pulls",
+            "https://api.github.com/repos/jbosstm/jboss-transaction-spi/pulls",
+            "https://api.github.com/repos/jbosstm/jboss-as/pulls",
+            "https://api.github.com/repos/jbosstm/jboss-transaction-spi/pulls",
+            "https://api.github.com/repos/jbosstm/narayana.io/pulls",
+            "https://api.github.com/repos/jbosstm/performance/pulls",
+            "https://api.github.com/repos/jboss-dockerfiles/narayana/pulls",
+            "https://api.github.com/repos/web-servers/narayana-tomcat/pulls",
+            "https://api.github.com/search/issues?q=state%3Aopen+repo%3Awildfly/wildfly+type%3Apr+author%3Azhfeng",
+            "https://api.github.com/search/issues?q=state%3Aopen+repo%3Awildfly/wildfly+type%3Apr+author%3Ammusgrov",
+            "https://api.github.com/search/issues?q=state%3Aopen+repo%3Awildfly/wildfly+type%3Apr+author%3Azhfeng",
+            "https://api.github.com/search/issues?q=state%3Aopen+repo%3Awildfly/wildfly+type%3Apr+author%3Atomjenkinson"
+    });
 
     private List<Pull> lastPulls = new ArrayList<Pull>();
     private SimpleDateFormat sdf;
@@ -66,8 +85,8 @@ public class PullViewer {
         lastChecked = currentTime;
         try {
             List<Pull> pulls = new ArrayList<Pull>();
-            for (String project : new String[]{"jbosstm/narayana", "jbosstm/quickstart", "jbosstm/documentation", "jbosstm/jboss-transaction-spi", "jbosstm/jboss-as", "jbosstm/jboss-transaction-spi", "jbosstm/narayana.io", "jbosstm/performance", "jboss-dockerfiles/narayana", "web-servers/narayana-tomcat"}) {
-                URL url = new URL("https://api.github.com/repos/" + project + "/pulls");
+            for (String project : urls) {
+                URL url = new URL( project);
                 URLConnection connection = url.openConnection();
                 if (basic == null) {
                     File file = new File("creds");
@@ -98,8 +117,12 @@ public class PullViewer {
                 }
                 is.close();
                 String string = buffer.toString();
-                JSONArray json = (JSONArray) JSONSerializer.toJSON(string);
-                Iterator iterator = json.iterator();
+                JSON json = JSONSerializer.toJSON(string);
+                if (!json.isArray())
+                {
+                    json = (JSON) ((JSONObject)json).get("items");
+                }
+                Iterator iterator = ((JSONArray)json).iterator();
                 while (iterator.hasNext()) {
                     JSONObject next = (JSONObject) iterator.next();
                     String title = next.getString("title");
@@ -112,7 +135,7 @@ public class PullViewer {
                                     : title.length(),
                             title.indexOf('.') > 0 ? title.indexOf('.')
                                     : title.length()));
-                    String description = title.substring(title.indexOf(' '));
+                    String description = title.substring(title.indexOf(" ") + 1);
                     pulls.add(new Pull(project, pullUrl, jiraUrl, description));
 
                 }
@@ -129,4 +152,13 @@ public class PullViewer {
 
         return lastPulls;
     }
+
+//    public static void main (String[] args) throws IOException {
+//        PullViewer viewer = new PullViewer();
+//        viewer.init();
+//        List<Pull> pulls = viewer.getPulls();
+//        for (Pull pull : pulls) {
+//            System.out.println(pull.getDescription());
+//        }
+//    }
 }
