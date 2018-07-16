@@ -138,7 +138,7 @@ public class PullViewer {
                             title.indexOf(' ') > 0 ? title.indexOf(' ')
                                     : title.length(),
                             title.indexOf('.') > 0 ? title.indexOf('.')
-                                    : title.length()));
+                                    : title.length())).replace("[","").replace("]","");
                     String description = title.substring(title.indexOf(" ") + 1);
                     pulls.add(new Pull(project, pullUrl, jiraUrl, description));
 
