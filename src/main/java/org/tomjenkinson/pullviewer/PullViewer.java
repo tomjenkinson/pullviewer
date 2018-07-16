@@ -131,8 +131,8 @@ public class PullViewer {
                     JSONObject next = (JSONObject) iterator.next();
                     String title = next.getString("title");
                     String pullUrl = next.getString("url").replace(
-                            "api.github.com/repos/" + project + "/pulls",
-                            "github.com/" + project + "/pull");
+                            "api.github.com/repos/",
+                            "github.com/").replace("/pulls/", "/pull/");
                     String jiraUrl = "https://issues.jboss.org/browse/"
                             + title.substring(0, Math.min(
                             title.indexOf(' ') > 0 ? title.indexOf(' ')
