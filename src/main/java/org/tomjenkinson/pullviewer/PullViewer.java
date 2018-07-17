@@ -45,7 +45,7 @@ import java.util.TimeZone;
 @Named("pullViewer")
 @ApplicationScoped
 public class PullViewer {
-    private Pull rateLimited = new Pull("RATELIMITED", "RATELIMITED", "ERROR", "RATE LIMITED WARNING CACHED DATA");
+    private Pull rateLimited = new Pull("pullviewer", "http://github.com/jbosstm/narayana/pulls/", "http://issues.jboss.org/browse/JBTM", "pullViewer", "RATE LIMITED WARNING CACHED DATA");
 
     private List<String> urls = Arrays.asList(new String[] {
             "https://api.github.com/repos/jbosstm/narayana/pulls",
@@ -58,14 +58,14 @@ public class PullViewer {
             "https://api.github.com/repos/jbosstm/performance/pulls",
             "https://api.github.com/repos/jboss-dockerfiles/narayana/pulls",
             "https://api.github.com/repos/web-servers/narayana-tomcat/pulls",
-            "https://api.github.com/search/issues?q=state%3Aopen+repo%3Awildfly/wildfly+type%3Apr+author%3Azhfeng",
-            "https://api.github.com/search/issues?q=state%3Aopen+repo%3Awildfly/wildfly+type%3Apr+author%3Ammusgrov",
-            "https://api.github.com/search/issues?q=state%3Aopen+repo%3Awildfly/wildfly+type%3Apr+author%3Aochaloup",
-            "https://api.github.com/search/issues?q=state%3Aopen+repo%3Awildfly/wildfly+type%3Apr+author%3Atomjenkinson",
             "https://api.github.com/search/issues?q=state%3Aopen+repo%3Awildfly/wildfly-proposals+type%3Apr+author%3Azhfeng",
             "https://api.github.com/search/issues?q=state%3Aopen+repo%3Awildfly/wildfly-proposals+type%3Apr+author%3Ammusgrov",
             "https://api.github.com/search/issues?q=state%3Aopen+repo%3Awildfly/wildfly-proposals+type%3Apr+author%3Aochaloup",
             "https://api.github.com/search/issues?q=state%3Aopen+repo%3Awildfly/wildfly-proposals+type%3Apr+author%3Atomjenkinson",
+            "https://api.github.com/search/issues?q=state%3Aopen+repo%3Awildfly/wildfly+type%3Apr+author%3Azhfeng",
+            "https://api.github.com/search/issues?q=state%3Aopen+repo%3Awildfly/wildfly+type%3Apr+author%3Ammusgrov",
+            "https://api.github.com/search/issues?q=state%3Aopen+repo%3Awildfly/wildfly+type%3Apr+author%3Aochaloup",
+            "https://api.github.com/search/issues?q=state%3Aopen+repo%3Awildfly/wildfly+type%3Apr+author%3Atomjenkinson",
             "https://api.github.com/search/issues?q=state%3Aopen+repo%3Ajboss-openshift/cct_module+type%3Apr+author%3Azhfeng",
             "https://api.github.com/search/issues?q=state%3Aopen+repo%3Ajboss-openshift/cct_module+type%3Apr+author%3Ammusgrov",
             "https://api.github.com/search/issues?q=state%3Aopen+repo%3Ajboss-openshift/cct_module+type%3Apr+author%3Aochaloup",
@@ -138,6 +138,12 @@ public class PullViewer {
                 while (iterator.hasNext()) {
                     JSONObject next = (JSONObject) iterator.next();
                     String title = next.getString("title");
+                    String author = "unknown";
+                    try {
+                        author = next.getJSONObject("user").getString("login");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     String pullUrl = next.getString("url").replace(
                             "api.github.com/repos/",
                             "github.com/").replace("/pulls/", "/pull/");
@@ -148,7 +154,9 @@ public class PullViewer {
                             title.indexOf('.') > 0 ? title.indexOf('.')
                                     : title.length())).replace("[","").replace("]","");
                     String description = title.substring(title.indexOf(" ") + 1);
-                    pulls.add(new Pull(project, pullUrl, jiraUrl, description));
+                    pulls.add(new Pull(next.getString("url").replace(
+                            "https://api.github.com/repos/",
+                            "").replace("/pulls/", "-").replace("/issues/", "-"), pullUrl, jiraUrl, author, description));
 
                 }
             }
@@ -165,12 +173,12 @@ public class PullViewer {
         return lastPulls;
     }
 
-//    public static void main (String[] args) throws IOException {
-//        PullViewer viewer = new PullViewer();
-//        viewer.init();
-//        List<Pull> pulls = viewer.getPulls();
-//        for (Pull pull : pulls) {
-//            System.out.println(pull.getDescription());
-//        }
-//    }
+    public static void main (String[] args) throws IOException {
+        PullViewer viewer = new PullViewer();
+        viewer.init();
+        List<Pull> pulls = viewer.getPulls();
+        for (Pull pull : pulls) {
+            System.out.println(pull.getDescription() + " " + pull.getAuthor());
+        }
+    }
 }

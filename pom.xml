@@ -74,4 +74,21 @@
       </plugin>
 		</plugins>
 	</build>
+	<profiles>
+		<profile>
+			<id>secondrun</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.wildfly.plugins</groupId>
+						<artifactId>wildfly-maven-plugin</artifactId>
+						<version>1.2.1.Final</version>
+						<configuration>
+							<jbossHome>c:/Users/still/Documents/jbosstm/pullviewer/deployments/wildfly-run/wildfly-13.0.0.Final/</jbossHome>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
