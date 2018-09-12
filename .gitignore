@@ -2,4 +2,4 @@ target
 deployments/ROOT.war
 deployments/wildfly-run/
 *.iml
-config
+config/

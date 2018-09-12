@@ -105,7 +105,7 @@ public class PullViewer {
                 URL url = new URL( project);
                 URLConnection connection = url.openConnection();
                 if (basic == null) {
-                    File file = new File("config");
+                    File file = new File("config/creds");
                     if (file.exists()) {
                         BufferedReader reader = new BufferedReader(new FileReader(file));
                         String username = reader.readLine();
