@@ -64,9 +64,10 @@
       <plugin>
         <groupId>org.wildfly.plugins</groupId>
         <artifactId>wildfly-maven-plugin</artifactId>
-        <version>1.2.1.Final</version>
+        <version>1.2.2.Final</version>
         <configuration>
           <filename>..\deployments\ROOT.war</filename>
+          <jbossHome>./deployments/wildfly-run/wildfly-15.0.0.Final/</jbossHome>
           <javaOpts>
             <javaOpt>-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n</javaOpt>
           </javaOpts>
@@ -82,9 +83,9 @@
 					<plugin>
 						<groupId>org.wildfly.plugins</groupId>
 						<artifactId>wildfly-maven-plugin</artifactId>
-						<version>1.2.1.Final</version>
+            <version>1.2.2.Final</version>
 						<configuration>
-							<jbossHome>c:/Users/still/Documents/jbosstm/pullviewer/deployments/wildfly-run/wildfly-13.0.0.Final/</jbossHome>
+          <jbossHome>./deployments/wildfly-run/wildfly-15.0.0.Final/</jbossHome>
 						</configuration>
 					</plugin>
 				</plugins>
