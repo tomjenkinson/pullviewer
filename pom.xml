@@ -70,6 +70,7 @@
           <jbossHome>./deployments/wildfly-run/wildfly-15.0.0.Final/</jbossHome>
           <javaOpts>
             <javaOpt>-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n</javaOpt>
+            <javaOpt>-Djboss.http.port=9090</javaOpt>
           </javaOpts>
         </configuration>
       </plugin>
