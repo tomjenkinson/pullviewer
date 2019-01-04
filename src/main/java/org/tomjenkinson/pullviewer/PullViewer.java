@@ -25,29 +25,18 @@ import net.sf.json.JSONSerializer;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 @Named("pullViewer")
 @ApplicationScoped
 public class PullViewer {
     private Pull rateLimited = new Pull("pullviewer", "http://github.com/jbosstm/narayana/pulls/", "http://issues.jboss.org/browse/JBTM", "pullViewer", "RATE LIMITED WARNING CACHED DATA");
 
-    private List<String> urls = Arrays.asList(new String[] {
+    private List<String> urls = Arrays.asList(new String[]{
             "https://api.github.com/repos/jbosstm/narayana/pulls",
             "https://api.github.com/repos/jbosstm/quickstart/pulls",
             "https://api.github.com/repos/jbosstm/documentation/pulls",
@@ -90,8 +79,17 @@ public class PullViewer {
     private long lastChecked;
     private String basic;
 
+    public static void main(String[] args) throws IOException {
+        PullViewer viewer = new PullViewer();
+        viewer.init();
+        List<Pull> pulls = viewer.getPulls();
+        for (Pull pull : pulls) {
+            System.out.println(pull.getDescription() + " " + pull.getAuthor());
+        }
+    }
+
     @PostConstruct
-    public void init () {
+    public void init() {
         sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
         sdf.setTimeZone(TimeZone.getTimeZone("Europe/London"));
     }
@@ -104,90 +102,94 @@ public class PullViewer {
             return lastPulls;
         }
         lastChecked = currentTime;
-        try {
-            List<Pull> pulls = new ArrayList<Pull>();
-            for (String project : urls) {
-                URL url = new URL( project);
-                URLConnection connection = url.openConnection();
-                if (basic == null) {
-                    File file = new File("config/creds");
-                    if (file.exists()) {
-                        BufferedReader reader = new BufferedReader(new FileReader(file));
-                        String username = reader.readLine();
-                        String password = reader.readLine();
-                        basic = "Basic " + javax.xml.bind.DatatypeConverter.printBase64Binary((username + ":" + password).getBytes());
-                    } else {
-                        System.out.println("Still looking for: " + file.getAbsolutePath());
-                    }
-                }
-                if (basic != null) {
-                    connection.setRequestProperty ("Authorization", basic);
-                }
-
-                String rateReset = connection.getHeaderField("X-RateLimit-Reset");
-                Date reset = new Date(Integer.parseInt(rateReset) * 1000L);
-                rateLimited.setDescription("RATE LIMITED WARNING CACHED DATA - rate will reset at " + sdf.format(reset));
-
-                connection.connect();
-                InputStream is = connection.getInputStream();
-                int ptr = 0;
-                StringBuffer buffer = new StringBuffer();
-                List<String> ids = new ArrayList<String>();
-                while ((ptr = is.read()) != -1) {
-                    buffer.append((char) ptr);
-                }
-                is.close();
-                String string = buffer.toString();
-                JSON json = JSONSerializer.toJSON(string);
-                if (!json.isArray())
-                {
-                    json = (JSON) ((JSONObject)json).get("items");
-                }
-                Iterator iterator = ((JSONArray)json).iterator();
-                while (iterator.hasNext()) {
-                    JSONObject next = (JSONObject) iterator.next();
-                    String title = next.getString("title");
-                    String author = "unknown";
+        final List<Pull> pulls = new ArrayList<Pull>();
+        List<Thread> threads = new ArrayList<Thread>();
+        for (final String project : urls) {
+            Thread thread = new Thread() {
+                public void run() {
                     try {
-                        author = next.getJSONObject("user").getString("login");
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        URL url = new URL(project);
+                        URLConnection connection = url.openConnection();
+                        if (basic == null) {
+                            File file = new File("config/creds");
+                            if (file.exists()) {
+                                BufferedReader reader = new BufferedReader(new FileReader(file));
+                                String username = reader.readLine();
+                                String password = reader.readLine();
+                                basic = "Basic " + javax.xml.bind.DatatypeConverter.printBase64Binary((username + ":" + password).getBytes());
+                            } else {
+                                System.out.println("Still looking for: " + file.getAbsolutePath());
+                            }
+                        }
+                        if (basic != null) {
+                            connection.setRequestProperty("Authorization", basic);
+                        }
+
+                        String rateReset = connection.getHeaderField("X-RateLimit-Reset");
+                        Date reset = new Date(Integer.parseInt(rateReset) * 1000L);
+                        rateLimited.setDescription("RATE LIMITED WARNING CACHED DATA - rate will reset at " + sdf.format(reset));
+
+                        connection.connect();
+                        InputStream is = connection.getInputStream();
+                        int ptr = 0;
+                        StringBuffer buffer = new StringBuffer();
+                        List<String> ids = new ArrayList<String>();
+                        while ((ptr = is.read()) != -1) {
+                            buffer.append((char) ptr);
+                        }
+                        is.close();
+                        String string = buffer.toString();
+                        JSON json = JSONSerializer.toJSON(string);
+                        if (!json.isArray()) {
+                            json = (JSON) ((JSONObject) json).get("items");
+                        }
+                        Iterator iterator = ((JSONArray) json).iterator();
+                        while (iterator.hasNext()) {
+                            JSONObject next = (JSONObject) iterator.next();
+                            String title = next.getString("title");
+                            String author = "unknown";
+                            try {
+                                author = next.getJSONObject("user").getString("login");
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            String pullUrl = next.getString("url").replace(
+                                    "api.github.com/repos/",
+                                    "github.com/").replace("/pulls/", "/pull/");
+                            String jiraUrl = "https://issues.jboss.org/browse/"
+                                    + title.substring(0, Math.min(
+                                    title.indexOf(' ') > 0 ? title.indexOf(' ')
+                                            : title.length(),
+                                    title.indexOf('.') > 0 ? title.indexOf('.')
+                                            : title.length())).replace("[", "").replace("]", "");
+                            String description = title.substring(title.indexOf(" ") + 1);
+                            pulls.add(new Pull(next.getString("url").replace(
+                                    "https://api.github.com/repos/",
+                                    "").replace("/pulls/", "-").replace("/issues/", "-"), pullUrl, jiraUrl, author, description));
+                        }
+
+                    } catch (Throwable t) {
+                        basic = null;
+//                        t.printStackTrace(); // This is probably rate limit
+                        System.out.println("Could not connect for" + project);
+                        if (!pulls.contains(rateLimited)) {
+                            pulls.add(0, rateLimited);
+                        }
                     }
-                    String pullUrl = next.getString("url").replace(
-                            "api.github.com/repos/",
-                            "github.com/").replace("/pulls/", "/pull/");
-                    String jiraUrl = "https://issues.jboss.org/browse/"
-                            + title.substring(0, Math.min(
-                            title.indexOf(' ') > 0 ? title.indexOf(' ')
-                                    : title.length(),
-                            title.indexOf('.') > 0 ? title.indexOf('.')
-                                    : title.length())).replace("[","").replace("]","");
-                    String description = title.substring(title.indexOf(" ") + 1);
-                    pulls.add(new Pull(next.getString("url").replace(
-                            "https://api.github.com/repos/",
-                            "").replace("/pulls/", "-").replace("/issues/", "-"), pullUrl, jiraUrl, author, description));
-
                 }
-            }
-            lastPulls.clear();
-            lastPulls.addAll(pulls);
-        } catch (Throwable t) {
-            basic = null;
-            t.printStackTrace(); // This is probably rate limit
-            if (!lastPulls.contains(rateLimited)) {
-                lastPulls.add(0, rateLimited);
+            };
+            thread.start();
+            threads.add(thread);
+        }
+        for (Thread thread : threads) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
-
+        lastPulls.clear();
+        lastPulls.addAll(pulls);
         return lastPulls;
-    }
-
-    public static void main (String[] args) throws IOException {
-        PullViewer viewer = new PullViewer();
-        viewer.init();
-        List<Pull> pulls = viewer.getPulls();
-        for (Pull pull : pulls) {
-            System.out.println(pull.getDescription() + " " + pull.getAuthor());
-        }
     }
 }
