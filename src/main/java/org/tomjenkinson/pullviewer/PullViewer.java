@@ -75,7 +75,11 @@ public class PullViewer {
             "https://api.github.com/search/issues?q=state%3Aopen+repo%3Aapache/commons-dbcp+type%3Apr+author%3Azhfeng",
             "https://api.github.com/search/issues?q=state%3Aopen+repo%3Aapache/commons-dbcp+type%3Apr+author%3Ammusgrov",
             "https://api.github.com/search/issues?q=state%3Aopen+repo%3Aapache/commons-dbcp+type%3Apr+author%3Aochaloup",
-            "https://api.github.com/search/issues?q=state%3Aopen+repo%3Aapache/commons-dbcp+type%3Apr+author%3Atomjenkinson"
+            "https://api.github.com/search/issues?q=state%3Aopen+repo%3Aapache/commons-dbcp+type%3Apr+author%3Atomjenkinson",
+            "https://api.github.com/search/issues?q=state%3Aopen+repo%3Aquarkusio/quarkus+type%3Apr+author%3Azhfeng",
+            "https://api.github.com/search/issues?q=state%3Aopen+repo%3Aquarkusio/quarkus+type%3Apr+author%3Ammusgrov",
+            "https://api.github.com/search/issues?q=state%3Aopen+repo%3Aquarkusio/quarkus+type%3Apr+author%3Aochaloup",
+            "https://api.github.com/search/issues?q=state%3Aopen+repo%3Aquarkusio/quarkus+type%3Apr+author%3Atomjenkinson"
     });
 
     private List<Pull> lastPulls = new ArrayList<Pull>();
