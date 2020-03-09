@@ -121,8 +121,9 @@ public class PullViewer {
                             if (file.exists()) {
                                 BufferedReader reader = new BufferedReader(new FileReader(file));
                                 String username = reader.readLine();
-                                String password = reader.readLine();
-                                basic = "Basic " + javax.xml.bind.DatatypeConverter.printBase64Binary((username + ":" + password).getBytes());
+                                //String password = reader.readLine();
+                                basic = "token " + username);
+                                //javax.xml.bind.DatatypeConverter.printBase64Binary((username + ":" + password).getBytes());
                             } else {
                                 System.out.println("Still looking for: " + file.getAbsolutePath());
                             }
