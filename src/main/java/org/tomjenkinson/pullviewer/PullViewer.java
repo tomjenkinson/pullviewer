@@ -124,6 +124,7 @@ public class PullViewer {
                                 //String password = reader.readLine();
                                 basic = "token " + username;
                                 //javax.xml.bind.DatatypeConverter.printBase64Binary((username + ":" + password).getBytes());
+                                System.out.println("Read from: " + file.getAbsolutePath());
                             } else {
                                 System.out.println("Still looking for: " + file.getAbsolutePath());
                             }
