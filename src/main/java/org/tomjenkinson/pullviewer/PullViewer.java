@@ -135,7 +135,7 @@ public class PullViewer {
 
                         String rateReset = connection.getHeaderField("X-RateLimit-Reset");
                         Date reset = new Date(Integer.parseInt(rateReset) * 1000L);
-                        rateLimited.setDescription("RATE LIMITED WARNING CACHED DATA - rate ("+connection.getHeaderField("X-RateLimit-Remaining")+"/"++connection.getHeaderField("X-RateLimit-Limit")+") will reset at " + sdf.format(reset));
+                        rateLimited.setDescription("RATE LIMITED WARNING CACHED DATA - rate ("+connection.getHeaderField("X-RateLimit-Remaining")+"/"+connection.getHeaderField("X-RateLimit-Limit")+") will reset at " + sdf.format(reset));
 
                         connection.connect();
                         InputStream is = connection.getInputStream();
