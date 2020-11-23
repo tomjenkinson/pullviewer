@@ -196,8 +196,16 @@ public class PullViewer {
                 e.printStackTrace();
             }
         }
-        lastPulls.clear();
-        lastPulls.addAll(pulls);
+        // Keep the existing list of pulls due to being rate limited
+        if (!pulls.contains(rateLimited)) {
+            lastPulls.clear();
+            lastPulls.addAll(pulls);
+        } else {
+            if (!lastPulls.contains(rateLimited)) {
+                lastPulls.add(0, rateLimited);
+            }
+        }
+            
         return lastPulls;
     }
 }
