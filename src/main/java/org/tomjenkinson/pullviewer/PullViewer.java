@@ -36,7 +36,7 @@ import java.util.*;
 public class PullViewer {
     private Pull rateLimited = new Pull("pullviewer", "http://github.com/jbosstm/narayana/pulls/", "http://issues.jboss.org/browse/JBTM", "pullViewer", "RATE LIMITED WARNING CACHED DATA");
 
-    private List<String> urls = Arrays.asList(new String[]{
+    List<String> urls = Arrays.asList(new String[]{
             "https://api.github.com/repos/jbosstm/narayana/pulls",
             "https://api.github.com/repos/jbosstm/quickstart/pulls",
             "https://api.github.com/repos/jbosstm/documentation/pulls",
@@ -175,10 +175,15 @@ public class PullViewer {
                                     "https://api.github.com/repos/",
                                     "").replace("/pulls/", "-").replace("/issues/", "-"), pullUrl, jiraUrl, author, description));
                         }
-
+                        pulls.sort(new Comparator<Pull>() {
+                            @Override
+                            public int compare(Pull o1, Pull o2) {
+                                return o1.getPullUrl().compareTo(o2.getPullUrl());
+                            }
+                        });
                     } catch (Throwable t) {
                         basic = null;
-//                        t.printStackTrace(); // This is probably rate limit
+                        t.printStackTrace(); // This is probably rate limit
                         System.out.println("Could not connect for" + project);
                         if (!pulls.contains(rateLimited)) {
                             pulls.add(0, rateLimited);

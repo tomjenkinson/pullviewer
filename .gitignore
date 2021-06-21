@@ -3,3 +3,4 @@ deployments/ROOT.war
 deployments/wildfly-run/
 *.iml
 config/
+.idea/
