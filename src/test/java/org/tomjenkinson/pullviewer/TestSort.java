@@ -1,5 +1,6 @@
 package org.tomjenkinson.pullviewer;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.tomjenkinson.pullviewer.PullViewer;
 
@@ -11,6 +12,7 @@ import static org.junit.Assert.fail;
 
 public class TestSort {
     @Test
+    @Ignore
     public void testSort() throws IOException {
         PullViewer pv = new PullViewer();
         pv.urls = Arrays.asList(new String[]{
