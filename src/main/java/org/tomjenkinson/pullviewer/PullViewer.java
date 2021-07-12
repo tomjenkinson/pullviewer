@@ -47,6 +47,7 @@ public class PullViewer {
             "https://api.github.com/repos/jbosstm/performance/pulls",
             "https://api.github.com/repos/jbosstm/conferences/pulls",
             "https://api.github.com/repos/jboss-dockerfiles/narayana/pulls",
+            "https://api.github.com/repos/jbosstm/narayana-tomcat/pulls",
 //            "https://api.github.com/repos/web-servers/narayana-tomcat/pulls",
 //            "https://api.github.com/search/issues?q=state%3Aopen+repo%3Awildfly/wildfly-capabilities+type%3Apr+author%3Azhfeng",
 //            "https://api.github.com/search/issues?q=state%3Aopen+repo%3Awildfly/wildfly-capabilities+type%3Apr+author%3Ammusgrov",
