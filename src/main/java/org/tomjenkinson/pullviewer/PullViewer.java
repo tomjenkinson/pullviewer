@@ -90,9 +90,16 @@ public class PullViewer {
         PullViewer viewer = new PullViewer();
         viewer.init();
         List<Pull> pulls = viewer.getPulls();
+        File file = new File("pulls.html");
+        FileWriter writer = new FileWriter(file);
+        writer.append("<html>\n");
         for (Pull pull : pulls) {
-            System.out.println(pull.getDescription() + " " + pull.getAuthor());
+            writer.append("  <p><a href=\""+pull.getPullUrl()+"\"a>"+pull.getPullUrl()+"</a> "+pull.getDescription()+" from "+pull.getAuthor()+"</p>\n");
         }
+        writer.append("  <p>That is all, to change the list of repos please click <a href=\"https://github.com/tomjenkinson/pullviewer/blob/master/src/main/java/org/tomjenkinson/pullviewer/PullViewer.java#L50\">here</a></p>\n");
+        writer.append("</html>");
+        writer.flush();
+        writer.close();
     }
 
     @PostConstruct
@@ -103,6 +110,19 @@ public class PullViewer {
 
     // JSF will call this multiple times so only attempt if older than 10 seconds
     public synchronized List<Pull> getPulls() throws IOException {
+        if (basic == null) {
+            File file = new File("config/creds");
+            if (file.exists()) {
+                BufferedReader reader = new BufferedReader(new FileReader(file));
+                String username = reader.readLine();
+                //String password = reader.readLine();
+                basic = "token " + username;
+                //javax.xml.bind.DatatypeConverter.printBase64Binary((username + ":" + password).getBytes());
+                System.out.println("Read from: " + file.getAbsolutePath());
+            } else {
+                throw new RuntimeException("Looking for: " + file.getAbsolutePath());
+            }
+        }
 
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastChecked < 10000) {
@@ -117,19 +137,6 @@ public class PullViewer {
                     try {
                         URL url = new URL(project);
                         URLConnection connection = url.openConnection();
-                        if (basic == null) {
-                            File file = new File("config/creds");
-                            if (file.exists()) {
-                                BufferedReader reader = new BufferedReader(new FileReader(file));
-                                String username = reader.readLine();
-                                //String password = reader.readLine();
-                                basic = "token " + username;
-                                //javax.xml.bind.DatatypeConverter.printBase64Binary((username + ":" + password).getBytes());
-                                System.out.println("Read from: " + file.getAbsolutePath());
-                            } else {
-                                System.out.println("Still looking for: " + file.getAbsolutePath());
-                            }
-                        }
                         if (basic != null) {
                             connection.setRequestProperty("Authorization", basic);
                         }
@@ -176,12 +183,6 @@ public class PullViewer {
                                     "https://api.github.com/repos/",
                                     "").replace("/pulls/", "-").replace("/issues/", "-"), pullUrl, jiraUrl, author, description));
                         }
-                        pulls.sort(new Comparator<Pull>() {
-                            @Override
-                            public int compare(Pull o1, Pull o2) {
-                                return o1.getPullUrl().compareTo(o2.getPullUrl());
-                            }
-                        });
                     } catch (Throwable t) {
                         basic = null;
                         t.printStackTrace(); // This is probably rate limit
@@ -202,6 +203,14 @@ public class PullViewer {
                 e.printStackTrace();
             }
         }
+
+        pulls.sort(new Comparator<Pull>() {
+            @Override
+            public int compare(Pull o1, Pull o2) {
+                return o1.getPullUrl().compareTo(o2.getPullUrl());
+            }
+        });
+
         // Keep the existing list of pulls due to being rate limited
         if (!pulls.contains(rateLimited)) {
             lastPulls.clear();
