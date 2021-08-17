@@ -93,10 +93,19 @@ public class PullViewer {
         File file = new File("pulls.html");
         FileWriter writer = new FileWriter(file);
         writer.append("<html>\n");
+        writer.append("  <body>\n");
+        writer.append("  <h1>pullViewer</h1>\n");
+        writer.append("  <table>\n");
+        writer.append("    <tbody>\n");
         for (Pull pull : pulls) {
-            writer.append("  <p><a href=\""+pull.getPullUrl()+"\"a>"+pull.getPullUrl()+"</a> "+pull.getDescription()+" from "+pull.getAuthor()+"</p>\n");
+            writer.append("    <tr>\n");
+            writer.append("      <td><a href=\""+pull.getPullUrl()+"\"a>"+pull.getProject()+"</a></td>"+"<td><a href=\""+pull.getJiraUrl()+"\"a>"+pull.getJiraUrl()+"</a></td>"+"<td>"+pull.getAuthor() +"</td><td>" +pull.getDescription()+"</td>\n");
+            writer.append("    </tr>\n");
         }
+        writer.append("    </tbody>\n");
+        writer.append("  </table>\n");
         writer.append("  <p>That is all, to change the list of repos please click <a href=\"https://github.com/tomjenkinson/pullviewer/blob/master/src/main/java/org/tomjenkinson/pullviewer/PullViewer.java#L50\">here</a></p>\n");
+        writer.append("</body>\n");
         writer.append("</html>");
         writer.flush();
         writer.close();
