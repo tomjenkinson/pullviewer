@@ -22,17 +22,17 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Named;
+//import javax.annotation.PostConstruct;
+//import javax.enterprise.context.ApplicationScoped;
+//import javax.inject.Named;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-@Named("pullViewer")
-@ApplicationScoped
+//@Named("pullViewer")
+//@ApplicationScoped
 public class PullViewer {
     private Pull rateLimited = new Pull("pullviewer", "http://github.com/jbosstm/narayana/pulls/", "http://issues.jboss.org/browse/JBTM", "pullViewer", "RATE LIMITED WARNING CACHED DATA");
 
@@ -111,7 +111,7 @@ public class PullViewer {
         writer.close();
     }
 
-    @PostConstruct
+//    @PostConstruct
     public void init() {
         sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
         sdf.setTimeZone(TimeZone.getTimeZone("Europe/London"));
