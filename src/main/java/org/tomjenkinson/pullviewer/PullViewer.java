@@ -85,6 +85,7 @@ public class PullViewer {
     private SimpleDateFormat sdf;
     private long lastChecked;
     private String basic;
+    private Date lastRefreshAttempt;
 
     public static void main(String[] args) throws IOException {
         PullViewer viewer = new PullViewer();
@@ -117,6 +118,13 @@ public class PullViewer {
         sdf.setTimeZone(TimeZone.getTimeZone("Europe/London"));
     }
 
+    public String getLastRefreshAttempt() throws IOException {
+      if (lastRefreshAttempt == null) {
+          getPulls();
+      }
+      return sdf.format(lastRefreshAttempt);
+    }
+
     // JSF will call this multiple times so only attempt if older than 10 seconds
     public synchronized List<Pull> getPulls() throws IOException {
         if (basic == null) {
@@ -132,6 +140,7 @@ public class PullViewer {
                 throw new RuntimeException("Looking for: " + file.getAbsolutePath());
             }
         }
+        lastRefreshAttempt = new Date();
 
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastChecked < 10000) {

@@ -14,6 +14,7 @@
 <body>
 
 	<h1>pullViewer</h1>
+  <h:outputText value="Last refresh attempt was #{pullViewer.lastRefreshAttempt}" />
 
 	<div id="container">
 		<h:dataTable id="pulls" value="#{pullViewer.pulls}" rendered="true"
