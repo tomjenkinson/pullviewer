@@ -96,6 +96,7 @@ public class PullViewer {
         writer.append("<html>\n");
         writer.append("  <body>\n");
         writer.append("  <h1>pullViewer</h1>\n");
+        writer.append("  <p>Last refresh attempt was " + getLastRefreshAttempt() + "</p>\n");
         writer.append("  <table>\n");
         writer.append("    <tbody>\n");
         for (Pull pull : pulls) {
