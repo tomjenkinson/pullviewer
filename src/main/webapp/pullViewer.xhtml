@@ -13,8 +13,10 @@
 
 <body>
 
-	<h1>pullViewer</h1>
-  <h:outputText value="Last refresh attempt was #{pullViewer.lastRefreshAttempt}" />
+  <h:form>
+  	<h1>pullViewer</h1>
+    <h:outputText value="Last refresh attempt was #{pullViewer.lastRefreshAttempt}" />
+  </h:form>
 
 	<div id="container">
 		<h:dataTable id="pulls" value="#{pullViewer.pulls}" rendered="true"
