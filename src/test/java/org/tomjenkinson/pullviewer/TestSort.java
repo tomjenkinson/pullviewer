@@ -2,7 +2,6 @@ package org.tomjenkinson.pullviewer;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.tomjenkinson.pullviewer.PullViewer;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -15,11 +14,11 @@ public class TestSort {
     @Ignore
     public void testSort() throws IOException {
         PullViewer pv = new PullViewer();
-        pv.urls = Arrays.asList(new String[]{
+        List<String> urls = Arrays.asList(new String[]{
                 "https://api.github.com/repos/jbosstm/narayana/pulls",
                 "https://api.github.com/repos/jbosstm/narayana.io/pulls"});
         pv.init();
-        List<Pull> pulls = pv.getPulls();
+        List<Pull> pulls = pv.getPulls(false, urls);
         String previous = null;
         for (Pull pull : pulls) {
             System.out.println(pull.getPullUrl());

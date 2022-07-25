@@ -8,12 +8,15 @@ public class Pull {
     private String jiraUrl;
     private String description;
 
-    public Pull(String project, String pullUrl, String jiraUrl, String author, String description) {
+    private boolean hold;
+
+    public Pull(String project, String pullUrl, String jiraUrl, String author, String description, boolean hold) {
         this.project = project;
         this.pullUrl = pullUrl;
         this.jiraUrl = jiraUrl;
         this.author = author;
         this.description = description;
+        this.hold = hold;
     }
 
     public String getProject() {
@@ -38,5 +41,9 @@ public class Pull {
 
     public void setDescription (String description) {
         this.description = description;
+    }
+
+    public boolean isHold() {
+        return hold;
     }
 }

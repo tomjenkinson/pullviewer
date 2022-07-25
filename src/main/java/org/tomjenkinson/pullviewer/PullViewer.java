@@ -34,9 +34,9 @@ import java.util.*;
 //@Named("pullViewer")
 //@ApplicationScoped
 public class PullViewer {
-    private Pull rateLimited = new Pull("pullviewer", "http://github.com/jbosstm/narayana/pulls/", "http://issues.jboss.org/browse/JBTM", "pullViewer", "RATE LIMITED WARNING CACHED DATA");
+    private Pull rateLimited = new Pull("pullviewer", "http://github.com/jbosstm/narayana/pulls/", "http://issues.jboss.org/browse/JBTM", "pullViewer", "RATE LIMITED WARNING CACHED DATA", false);
 
-    List<String> urls = Arrays.asList(new String[]{
+    private static final List<String> DEFAULT_URLS = Arrays.asList(new String[]{
             "https://api.github.com/repos/jbosstm/narayana/pulls",
             "https://api.github.com/repos/jbosstm/quickstart/pulls",
             "https://api.github.com/repos/jbosstm/documentation/pulls",
@@ -90,16 +90,43 @@ public class PullViewer {
     public static void main(String[] args) throws IOException {
         PullViewer viewer = new PullViewer();
         viewer.init();
-        List<Pull> pulls = viewer.getPulls();
-        File file = new File("pulls.html");
-        FileWriter writer = new FileWriter(file);
+        boolean fail = true;
+        List<String> urls = DEFAULT_URLS;
+        if (args.length > 0) {
+            fail = Boolean.valueOf(args[0]);
+            if (args.length > 1) {
+                urls = Arrays.asList(Arrays.copyOfRange(args, 1, args.length));
+            }
+        }
+        List<Pull> pulls = viewer.getPulls(fail, urls);
+        List<Pull> nonHoldPulls = new ArrayList<Pull>();
+        List<Pull> holdPulls = new ArrayList<Pull>();
+        for (Pull pull : pulls) {
+            if (pull.isHold()) {
+                holdPulls.add(pull);
+            } else {
+                nonHoldPulls.add(pull);
+            }
+        }
+        StringBuffer writer = new StringBuffer();
         writer.append("<html>\n");
         writer.append("  <body>\n");
         writer.append("  <h1>pullViewer</h1>\n");
-        writer.append("  <p>Last refresh attempt was " + viewer.getLastRefreshAttempt() + "</p>\n");
+        writer.append("  <p>Last refresh attempt was " + viewer.getLastRefreshAttempt(fail, urls) + "</p>\n");
+        writer.append("  <h1>Non Hold Pulls</h1>\n");
         writer.append("  <table>\n");
         writer.append("    <tbody>\n");
-        for (Pull pull : pulls) {
+        for (Pull pull : nonHoldPulls) {
+            writer.append("    <tr>\n");
+            writer.append("      <td><a href=\""+pull.getPullUrl()+"\"a>"+pull.getProject()+"</a></td>"+"<td><a href=\""+pull.getJiraUrl()+"\"a>"+pull.getJiraUrl()+"</a></td>"+"<td>"+pull.getAuthor() +"</td><td>" +pull.getDescription()+"</td>\n");
+            writer.append("    </tr>\n");
+        }
+        writer.append("    </tbody>\n");
+        writer.append("  </table>\n");
+        writer.append("  <h1>Hold Pulls</h1>\n");
+        writer.append("  <table>\n");
+        writer.append("    <tbody>\n");
+        for (Pull pull : holdPulls) {
             writer.append("    <tr>\n");
             writer.append("      <td><a href=\""+pull.getPullUrl()+"\"a>"+pull.getProject()+"</a></td>"+"<td><a href=\""+pull.getJiraUrl()+"\"a>"+pull.getJiraUrl()+"</a></td>"+"<td>"+pull.getAuthor() +"</td><td>" +pull.getDescription()+"</td>\n");
             writer.append("    </tr>\n");
@@ -109,8 +136,12 @@ public class PullViewer {
         writer.append("  <p>That is all, to change the list of repos please click <a href=\"https://github.com/tomjenkinson/pullviewer/blob/master/src/main/java/org/tomjenkinson/pullviewer/PullViewer.java#L50\">here</a></p>\n");
         writer.append("</body>\n");
         writer.append("</html>");
-        writer.flush();
-        writer.close();
+        File file = new File("pulls.html");
+        FileWriter fileWriter = new FileWriter(file);
+        fileWriter.append(writer);
+        fileWriter.flush();
+        fileWriter.close();
+        System.out.println(writer);
     }
 
 //    @PostConstruct
@@ -119,15 +150,15 @@ public class PullViewer {
         sdf.setTimeZone(TimeZone.getTimeZone("Europe/London"));
     }
 
-    public String getLastRefreshAttempt() throws IOException {
+    public String getLastRefreshAttempt(boolean fail, List<String> urls) throws IOException {
       if (lastRefreshAttempt == null) {
-          getPulls();
+          getPulls(fail, urls);
       }
       return sdf.format(lastRefreshAttempt);
     }
 
     // JSF will call this multiple times so only attempt if older than 10 seconds
-    public synchronized List<Pull> getPulls() throws IOException {
+    public synchronized List<Pull> getPulls(boolean fail, List<String> urls) throws IOException {
         if (basic == null) {
             File file = new File("config/creds");
             if (file.exists()) {
@@ -138,7 +169,11 @@ public class PullViewer {
                 //javax.xml.bind.DatatypeConverter.printBase64Binary((username + ":" + password).getBytes());
                 System.out.println("Read from: " + file.getAbsolutePath());
             } else {
-                throw new RuntimeException("Looking for: " + file.getAbsolutePath());
+                if (fail) {
+                    throw new RuntimeException("Looking for: " + file.getAbsolutePath());
+                } else {
+                    System.out.println("WARN: Did not have creds");
+                }
             }
         }
         lastRefreshAttempt = new Date();
@@ -181,6 +216,15 @@ public class PullViewer {
                         Iterator iterator = ((JSONArray) json).iterator();
                         while (iterator.hasNext()) {
                             JSONObject next = (JSONObject) iterator.next();
+                            JSONArray labels = (JSONArray) next.get("labels");
+                            Iterator i = labels.iterator();
+                            boolean hold = false;
+                            while(i.hasNext()) {
+                                JSONObject next1 = (JSONObject)i.next();
+                                if (!hold) {
+                                    hold = next1.get("name").equals("Hold");
+                                }
+                            }
                             String title = next.getString("title");
                             String author = "unknown";
                             try {
@@ -188,6 +232,7 @@ public class PullViewer {
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
+                            //JSONArray labelValues = (JSONArray) labels.get("values");
                             String pullUrl = next.getString("url").replace(
                                     "api.github.com/repos/",
                                     "github.com/").replace("/pulls/", "/pull/");
@@ -200,7 +245,7 @@ public class PullViewer {
                             String description = title.substring(title.indexOf(" ") + 1);
                             pulls.add(new Pull(next.getString("url").replace(
                                     "https://api.github.com/repos/",
-                                    "").replace("/pulls/", "-").replace("/issues/", "-"), pullUrl, jiraUrl, author, description));
+                                    "").replace("/pulls/", "-").replace("/issues/", "-"), pullUrl, jiraUrl, author, description, hold));
                         }
                     } catch (Throwable t) {
                         basic = null;
