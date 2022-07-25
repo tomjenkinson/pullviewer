@@ -236,13 +236,20 @@ public class PullViewer {
                             String pullUrl = next.getString("url").replace(
                                     "api.github.com/repos/",
                                     "github.com/").replace("/pulls/", "/pull/");
-                            String jiraUrl = "https://issues.jboss.org/browse/"
-                                    + title.substring(0, Math.min(
-                                    title.indexOf(' ') > 0 ? title.indexOf(' ')
-                                            : title.length(),
-                                    title.indexOf('.') > 0 ? title.indexOf('.')
-                                            : title.length())).replace("[", "").replace("]", "");
-                            String description = title.substring(title.indexOf(" ") + 1);
+                            boolean apparentJiraKey = title.matches("^\\[?[a-zA-Z]+-[0-9]+.*");
+                            String jiraUrl;
+                            String description = title;
+                            if (apparentJiraKey) {
+                                jiraUrl = "https://issues.jboss.org/browse/"
+                                                + title.substring(0, Math.min(
+                                                title.indexOf(' ') > 0 ? title.indexOf(' ')
+                                                                : title.length(),
+                                                title.indexOf('.') > 0 ? title.indexOf('.')
+                                                                : title.length())).replace("[", "").replace("]", "");
+                                description = title.substring(title.indexOf(" ") + 1);
+                            } else {
+                                 jiraUrl = "";
+                            }
                             pulls.add(new Pull(next.getString("url").replace(
                                     "https://api.github.com/repos/",
                                     "").replace("/pulls/", "-").replace("/issues/", "-"), pullUrl, jiraUrl, author, description, hold));
